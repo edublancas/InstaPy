@@ -155,8 +155,8 @@ class InstaPy:
 
         self.use_clarifai = False
         self.clarifai_api_key = None
-        self.clarifai_img_tags = []
-        self.clarifai_img_tags_skip = []
+        self.clarifai_img_tags = None
+        self.clarifai_img_tags_skip = None
         self.clarifai_full_match = False
 
         self.potency_ratio = 1.3466
@@ -550,7 +550,7 @@ class InstaPy:
         self.smart_hashtags = list(set(self.smart_hashtags))
         return self
 
-    def clarifai_check_img_for(self, tags=None, tags_skip=None, comment=False, comments=None):
+    def clarifai_check_img_for(self, tags=None, tags_skip=None):
         """Defines the tags, the images should be checked for"""
         if self.aborting:
             return self
@@ -558,9 +558,8 @@ class InstaPy:
         if tags is None and not self.clarifai_img_tags:
             self.use_clarifai = False
         elif tags:
-            self.clarifai_img_tags.append((tags, comment, comments))
+            self.clarifai_img_tags = tags
             self.clarifai_img_tags_skip = tags_skip
-
 
         return self
 
@@ -1227,12 +1226,41 @@ class InstaPy:
                         else:
                             web_adress_navigator(self.browser, link)
 
+                        temp_comments = []
+                        checked_img = True
+                        commenting = (random.randint(0, 100) <=
+                                          self.comment_percentage)
+                        following = (random.randint(0, 100) <=
+                                         self.follow_percentage)
+
+                        if self.use_clarifai:
+                                self.logger.info('checking clarifai...')
+                                try:
+                                    checked_img, temp_comments = (
+                                        check_image(self.browser,
+                                                    self.clarifai_api_key,
+                                                    self.clarifai_img_tags,
+                                                    self.clarifai_img_tags_skip,
+                                                    self.logger,
+                                                    self.clarifai_full_match)
+                                    )
+                                except Exception as err:
+                                    # if cannot check image, skip...
+                                    checked_img = False
+                                    self.logger.error(
+                                        'Image check error: {}'.format(err))
+
+
                         #try to like
-                        liked = like_image(self.browser,
+                        if checked_img:
+                            liked = like_image(self.browser,
                                            user_name,
                                            self.blacklist,
                                            self.logger,
                                            self.logfolder)
+                        else:
+                            self.logger.info('*************Not liking image as it didnt pass clarifai api*************')
+                            liked = False
 
                         if liked:
 
@@ -1256,26 +1284,6 @@ class InstaPy:
                                     self.user_interact_media)
 
                             liked_img += 1
-                            checked_img = True
-                            temp_comments = []
-                            commenting = (random.randint(0, 100) <=
-                                          self.comment_percentage)
-                            following = (random.randint(0, 100) <=
-                                         self.follow_percentage)
-
-                            if self.use_clarifai and (following or commenting):
-                                try:
-                                    checked_img, temp_comments = (
-                                        check_image(self.browser,
-                                                    self.clarifai_api_key,
-                                                    self.clarifai_img_tags,
-                                                    self.clarifai_img_tags_skip,
-                                                    self.logger,
-                                                    self.clarifai_full_match)
-                                    )
-                                except Exception as err:
-                                    self.logger.error(
-                                        'Image check error: {}'.format(err))
 
                             # comments
                             if (self.do_comment and
@@ -1349,7 +1357,8 @@ class InstaPy:
         self.inap_img += inap_img
         self.not_valid_users += not_valid_users
 
-        return self
+        return (liked_img, already_liked, commented, followed, inap_img,
+                not_valid_users)
 
     def like_by_users(self, usernames, amount=10, randomize=False, media=None):
         """Likes some amounts of images for each usernames"""
