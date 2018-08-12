@@ -1,9 +1,9 @@
 """Module which handles the clarifai api and checks
 the image for invalid content"""
-from clarifai.rest import ClarifaiApp, Image as ClImage
+from clarifai.rest import ClarifaiApp
 
 
-def check_image(browser, clarifai_api_key, img_tags, img_tags_skip_if_contain, logger, full_match=False, picture_url=None):
+def check_image(browser, clarifai_api_key, img_tags, img_tags_skip, logger, full_match=False, picture_url=None):
     """Uses the link to the image to check for invalid content in the image"""
     clarifai_api = ClarifaiApp(api_key=clarifai_api_key)
     # set req image to given one or get it from current page
@@ -13,22 +13,29 @@ def check_image(browser, clarifai_api_key, img_tags, img_tags_skip_if_contain, l
         img_link = picture_url
     # Uses Clarifai's v2 API
     model = clarifai_api.models.get('general-v1.3')
-    image = ClImage(url=img_link)
-    result = model.predict([image])
+    # image = ClImage(url=img_link)
+
+    logger.info('Predicting clarifai with URL %s', img_link)
+
+    result = model.predict_by_url(url=img_link)
+
     clarifai_tags = [concept.get('name').lower() for concept in result[
         'outputs'][0]['data']['concepts']]
 
-    for (tags, should_comment, comments) in img_tags:
-        if should_comment:
-            if given_tags_in_result(tags, clarifai_tags, full_match):
-                return True, comments
-        else:
-            if given_tags_in_result(tags, clarifai_tags, full_match):
-                if not given_tags_in_result(img_tags_skip_if_contain, clarifai_tags, full_match):
-                    logger.info('Not Commenting, image reco contains: "{}".'.format(', '.join(list(set(clarifai_tags)&set(tags)))))
-                    return False, []
+    logger.info('Clarifai tags: %s', clarifai_tags)
 
-    return True, []
+    desired_tags_appear = set(clarifai_tags) & set(img_tags)
+    banned_tags_appear = set(clarifai_tags) & set(img_tags_skip)
+
+    if desired_tags_appear and not banned_tags_appear:
+        logger.info('Clarifai test passed: the following tags are present: '
+                    '%s and no banned tags appear', desired_tags_appear)
+        return True, []
+    else:
+        logger.info('Clarifai test did not pass: the following tags '
+                    'appear: %s and the following banned tags appear: %s ',
+                    desired_tags_appear, banned_tags_appear)
+        return False, []
 
 
 def given_tags_in_result(search_tags, clarifai_tags, full_match=False):
