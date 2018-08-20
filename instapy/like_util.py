@@ -548,7 +548,11 @@ def like_image(browser, username, blacklist, logger, logfolder,
     logger.info('--> Invalid Like Element!')
 
     if after_like_hook:
-        after_like_hook(url=browser.current_url, result=result)
+        element = (browser
+                   .find_element_by_xpath("//meta[@property='al:ios:url'][1]"))
+        media_id = element.get_attribute('content').split('=')[-1]
+        after_like_hook(url=browser.current_url, media_id=media_id,
+                        result=result)
 
     return result
 
