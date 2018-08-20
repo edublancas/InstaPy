@@ -191,6 +191,9 @@ class InstaPy:
         # Get ready DB for use
         get_db(True)
 
+        # hooks
+        self.after_like_hook = None
+
         if self.selenium_local_session == True:
             self.set_selenium_local_session()
 
@@ -1257,7 +1260,8 @@ class InstaPy:
                                            user_name,
                                            self.blacklist,
                                            self.logger,
-                                           self.logfolder)
+                                           self.logfolder,
+                                           self.after_like_hook)
                         else:
                             self.logger.info('*************Not liking image as it didnt pass clarifai api*************')
                             liked = False

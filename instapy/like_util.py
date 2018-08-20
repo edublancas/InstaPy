@@ -508,8 +508,11 @@ def check_link(browser, post_link, dont_like, ignore_if_contains, logger):
     return False, user_name, is_video, 'None', "Success"
 
 
-def like_image(browser, username, blacklist, logger, logfolder):
+def like_image(browser, username, blacklist, logger, logfolder,
+               after_like_hook):
     """Likes the browser opened image"""
+
+    result = False
 
     like_xpath = "//button/span[@aria-label='Like']"
     unlike_xpath = "//button/span[@aria-label='Unlike']"
@@ -532,7 +535,7 @@ def like_image(browser, username, blacklist, logger, logfolder):
                     username, blacklist['campaign'], action, logger, logfolder
                 )
             sleep(2)
-            return True
+            result = True
         else:
             # if like not seceded wait for 2 min
             logger.info('--> Image was not able to get Liked! maybe blocked ?')
@@ -541,10 +544,13 @@ def like_image(browser, username, blacklist, logger, logfolder):
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
         if len(liked_elem) == 1:
             logger.info('--> Image already liked! ')
-            return False
 
     logger.info('--> Invalid Like Element!')
-    return False
+
+    if after_like_hook:
+        after_like_hook(url=browser.current_url, result=result)
+
+    return result
 
 
 def get_tags(browser, url):
