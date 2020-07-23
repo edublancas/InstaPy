@@ -1513,6 +1513,7 @@ class InstaPy:
                             self.logger,
                             self.logfolder,
                             liked_img,
+                            self.after_like_hook
                         )
 
                         if like_state is True:
@@ -1937,6 +1938,7 @@ class InstaPy:
                             self.logger,
                             self.logfolder,
                             liked_img,
+                            self.after_like_hook
                         )
 
                         if like_state is True:
@@ -2228,6 +2230,7 @@ class InstaPy:
                             self.logger,
                             self.logfolder,
                             total_liked_img,
+                            self.after_like_hook
                         )
                         if like_state is True:
                             total_liked_img += 1
@@ -2521,6 +2524,7 @@ class InstaPy:
                                 self.logger,
                                 self.logfolder,
                                 total_liked_img,
+                                self.after_like_hook
                             )
                             if like_state is True:
                                 total_liked_img += 1
@@ -2833,6 +2837,7 @@ class InstaPy:
                                 self.logger,
                                 self.logfolder,
                                 total_liked_img,
+                                self.after_like_hook
                             )
                             if like_state is True:
                                 total_liked_img += 1
@@ -3974,6 +3979,7 @@ class InstaPy:
                                     self.logger,
                                     self.logfolder,
                                     liked_img,
+                                    self.after_like_hook
                                 )
 
                                 if like_state is True:
@@ -4757,6 +4763,7 @@ class InstaPy:
                         self.logger,
                         self.logfolder,
                         liked_img,
+                        self.after_like_hook
                     )
 
                     if like_state is True:
@@ -5322,6 +5329,7 @@ class InstaPy:
                     self.logger,
                     self.logfolder,
                     self.liked_img,
+                    self.after_like_hook
                 )
                 if image_like_state is True:
                     like_failures_tracker["consequent"]["post_likes"] = 0
@@ -5743,6 +5751,7 @@ class InstaPy:
                             self.logger,
                             self.logfolder,
                             self.liked_img,
+                            self.after_like_hook
                         )
 
                         if like_state is True:

@@ -108,8 +108,8 @@ def check_image(
                         desired_tags_appear, banned_tags_appear)
             return False, []
 
-        except Exception as err:
-            logger.error("Image check error: {}".format(err))
+    except Exception as err:
+        logger.error("Image check error: {}".format(err))
 
 
 def given_tags_in_result(search_tags, clarifai_tags, full_match=False):
