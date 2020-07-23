@@ -102,6 +102,12 @@ def comment_image(browser, username, comments, blacklist, logger, logfolder):
                 .perform()
             )
 
+            # https://github.com/timgrossmann/InstaPy/issues/5526
+            sleep(2)
+            browser.back()
+            sleep(1)
+            browser.refresh()
+
             update_activity(
                 browser,
                 action="comments",
